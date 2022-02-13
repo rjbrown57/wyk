@@ -1,0 +1,10 @@
+apps:
+  metrics-server:
+    repo: https://github.com/rjbrown57/wyk.git
+    path: charts/metrics-server
+    namespace: kube-system
+  vpa:
+    repo: https://github.com/rjbrown57/wyk.git
+    path: charts/vpa
+    namespace: kube-system
+    server: https://kubernetes.default.svc

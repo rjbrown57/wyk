@@ -7,75 +7,37 @@ chartDir="./charts/"
 
 # Create cluster
 kindCreate() {
+    # Create Kind Cluster
     sudo kind create cluster --config=${kindConfig}
-}
 
-# https://haproxy-ingress.github.io/docs/getting-started/
-
-#export 
-#kubectl --namespace ingress-controller port-forward $POD_NAME 8080:80
-#echo "Visit http://127.0.0.1:8080 to access your application."
-
-# Test Ingress with
-#$ kubectl --namespace default create deployment echoserver --image k8s.gcr.io/echoserver:1.3
-#$ kubectl --namespace default expose deployment echoserver --port=8080
-# kubectl --namespace default create ingress echoserver\
-#  --annotation kubernetes.io/ingress.class=haproxy\
-#  --rule="echoserver.local/*=echoserver:8080"
-
-installVPA() {
-  helm upgrade --install metrics-server charts/metrics-server 
-  helm upgrade --install vpa charts/vpa 
-}
-
-installHAProxy() {
-  helm upgrade --install haproxy-ingress charts/haproxy-ingress\
-  --create-namespace --namespace ingress-controller\
-  --version 0.13.4
-}
-
-installKubeProm() {
-  helm upgrade --install kube-prom charts/kube-prometheus-stack\
-  --create-namespace --namespace prom
-
-  helm upgrade --install prom-adapter charts/prometheus-adapter -n prom
-
-  helm upgrade --install pg charts/prometheus-pushgateway\
-  --namespace prom
-}
-
-installVault() {
-  helm upgrade --install vault charts/vault\
-  --create-namespace --namespace vault
+    # Add ArgoCD
+    helm repo add argo https://argoproj.github.io/argo-helm
+    helm upgrade --install argocd argo/argo-cd -n argocd --create-namespace
 }
 
 portForward() {
-    kubectl -n vault port-forward service/vault 38200:8200 &
-    kubectl port-forward -n prom service/kube-prom-kube-prometheus-prometheus 39090:9090 &
-    kubectl port-forward -n prom service/pg-prometheus-pushgateway 39091:9091 &
-    kubectl port-forward -n prom service/kube-prom-kube-prometheus-alertmanager 39093:9093 &
-    kubectl port-forward -n prom service/kube-prom-grafana 32080:80 &   
-    printf "Return to end port-forward\n"
-    read hold
-    pkill -i kubectl
+    kubectl port-forward service/argocd-server -n argocd 8080:443 &
+}
+
+addApps() {
+    pass=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+    printf "Credentials = admin:%s\n" "${pass}"
+    printf "Log in at https://localhost:8080\n"
+
+    # Install Argo Apps
+    helm upgrade --install argoapps argoapps/apps -n argocd
 }
 
 main() {
     case "${1}" in 
-        "" | "fullinstall")
+        "create"|"")
             kindCreate
-            #installHAProxy
-            installVPA
-            installKubeProm
-            #installVault
         ;;
-        "postinstall")
-            installHAProxy
-            installKubeProm
-            installVault        
-        ;;
-        "portforward")
+        "portForward")
             portForward
+        ;;
+        "addApps")
+            addApps
         ;;
         "delete")
             kind delete clusters kind

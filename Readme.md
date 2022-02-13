@@ -1,25 +1,8 @@
 # Would you kindly? (Wyk)
 
-configureable Kind development set ups
-
-* Prometheus -> https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
-  * Add configuration to disable parts of stack via values.yaml overrides
-  * Grafana login 
-* Prom Push Gateway
-  * Still needs configuration to end up in prometheus
-* Vault
-
-## To Do
-Convert to golang and render kind config via template. Turn on ports for appropriate charts as requested by config file.
-
-### Cilium
-Will mutate kind config to disable default cni
-
-### Opa Gatekeer
-Deploy OPA gatekeeper for policy development
-
-### Ingress 
-Choose an ingress solution and hopefully get rid of extraPortMappings in kind config. Some progress with HaProxy but it's not directing traffic unless host is set to "*"
+* `./wyk` to create a kind cluster and install argo
+* `./wyk addApps` to install metrics-server and vpa via argo
+* `./wyk portForward` forward argo UI
 
 ## Links
 
