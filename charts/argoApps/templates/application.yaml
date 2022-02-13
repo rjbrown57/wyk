@@ -1,0 +1,15 @@
+{{ range $index,$element := .Values.apps }} 
+{{ template "argocdvals" }}
+  name: {{ $index }}
+spec:
+  destination:
+    namespace: {{ $element.namespace }}
+    server: {{ .server | default "https://kubernetes.default.svc" }}
+  project: {{ .project }}
+  source:
+    path: {{ $element.path }}
+    repoURL: {{ $element.repo }}
+    targetRevision: {{ .targetRevision | default "HEAD" }}
+  syncPolicy:
+    automated: {}
+{{ end }}

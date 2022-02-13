@@ -1,0 +1,40 @@
+{{ range $index,$element := .Values.projects }} 
+{{ template "argocdvals" }}
+  name: {{ $index }}
+spec:
+  # Project description
+  description: {{ .description }}
+
+  # Allow manifests to deploy from any Git repos
+  sourceRepos: {{ range $element.sourceRepos }}
+  - "{{.}}"
+  {{ end }}
+
+  # Only permit applications to deploy to the guestbook namespace in the same cluster
+  destinations: {{ range $element.destinations }}
+  - server: {{.server }}
+    namespace: "{{ .namespace }}"
+  {{ end }}
+
+  # Deny all cluster-scoped resources from being created, except for Namespace
+  clusterResourceWhitelist: {{ range $element.clusterResourceWhitelist }}
+  - group: {{ .group | quote}}
+    kind: {{ .kind | quote }}
+  {{ end }}
+
+  # Allow all namespaced-scoped resources to be created, except for ResourceQuota, LimitRange, NetworkPolicy
+  namespaceResourceBlacklist: {{ range $element.namespaceResourceBlacklist }}
+  - group: {{ .group | quote}}
+    kind: {{ .kind | quote }}
+  {{ end }}
+  
+  # Deny all namespaced-scoped resources from being created, except for Deployment and StatefulSet
+  namespaceResourceWhitelist: {{ range $element.namespaceResourceWhitelist }}
+  - group: {{ .group | quote}}
+    kind: {{ .kind | quote }}
+  {{ end }}
+
+  # Enables namespace orphaned resource monitoring.
+  orphanedResources:
+    warn: false
+{{ end }}

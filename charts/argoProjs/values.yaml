@@ -1,0 +1,25 @@
+projects:
+  admin:
+    description: "An admin level project"
+    sourceRepos: 
+      - '*'
+    destinations:
+      - server: https://kubernetes.default.svc
+        namespace: "*"
+    clusterResourceWhitelist: []
+    namespace: kube-system
+    
+  basic:
+    description: "A user level project"
+    sourceRepos: 
+      - '*'
+    destinations:
+      - server: https://kubernetes.default.svc
+        namespace: "*"
+    clusterResourceWhitelist: []
+    namespaceResourceBlacklist:
+      - group: ''
+        kind: ResourceQuota
+
+general:
+  namespace: argocd

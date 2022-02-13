@@ -19,19 +19,27 @@ portForward() {
     kubectl port-forward service/argocd-server -n argocd 8080:443 &
 }
 
-addApps() {
+getCreds() {
     pass=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
     printf "Credentials = admin:%s\n" "${pass}"
     printf "Log in at https://localhost:8080\n"
+}
+
+addApps() {
+    # Install Argo Pros
+    helm upgrade --install argoprojs charts/argoProjs -n argocd
 
     # Install Argo Apps
-    helm upgrade --install argoapps argoapps/apps -n argocd
+    helm upgrade --install argoapps charts/argoApps -n argocd
 }
 
 main() {
     case "${1}" in 
         "create"|"")
             kindCreate
+        ;;
+        "getCreds")
+            getCreds
         ;;
         "portForward")
             portForward
