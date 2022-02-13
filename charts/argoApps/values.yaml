@@ -1,6 +1,6 @@
 apps:
   metrics-server:
-    project: basic
+    project: admin
     repo: https://github.com/rjbrown57/wyk.git
     path: charts/metrics-server
     namespace: kube-system
