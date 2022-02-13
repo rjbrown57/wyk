@@ -10,6 +10,11 @@ spec:
     path: {{ $element.path }}
     repoURL: {{ $element.repo }}
     targetRevision: {{ .targetRevision | default "HEAD" }}
+    {{ if $element.helm }}
+    helm:
+      valueFiles:
+        - {{ $element.helm.valueFiles | default "values.yaml"}}
+    {{ end }}
   syncPolicy:
     automated: {}
 {{ end }}

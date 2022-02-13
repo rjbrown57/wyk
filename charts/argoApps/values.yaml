@@ -15,6 +15,8 @@ apps:
     repo: https://github.com/rjbrown57/wyk.git
     path: charts/namespaceChart
     namespace: kube-system
+    helm:
+      valueFiles: vars/kind.yaml
   nsadmin:
     project: admin
     repo: https://github.com/rjbrown57/wyk.git

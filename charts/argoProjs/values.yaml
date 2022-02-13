@@ -6,9 +6,10 @@ projects:
     destinations:
       - server: https://kubernetes.default.svc
         namespace: "*"
-    clusterResourceWhitelist: []
+    clusterResourceWhitelist: 
+      - group: '*'
+        kind: '*'
     namespace: kube-system
-    
   basic:
     description: "A user level project"
     sourceRepos: 
