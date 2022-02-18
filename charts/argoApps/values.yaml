@@ -28,3 +28,8 @@ apps:
     repo: https://github.com/rjbrown57/wyk.git
     path: charts/namespaceChart
     namespace: kube-system
+  harbor-helm:
+    project: admin
+    repo: https://github.com/rjbrown57/wyk.git
+    path: charts/harbor-helm
+    namespace: kube-system
