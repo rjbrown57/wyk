@@ -1,4 +1,4 @@
-{{- if .Values.admissionController.cleanupOnDelete }}
+{{- if and .Values.admissionController.cleanupOnDelete.enabled .Values.admissionController.enabled }}
 apiVersion: v1
 kind: ServiceAccount
 automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
@@ -59,9 +59,13 @@ spec:
     spec:
       restartPolicy: Never
       serviceAccountName: {{ include "vpa.fullname" . }}-cleanup
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: cleanup
-        image: quay.io/reactiveops/ci-images:v11-alpine
+        image: {{ .Values.admissionController.cleanupOnDelete.image.repository }}:{{ .Values.admissionController.cleanupOnDelete.image.tag }}
         command: ["bash"]
         args:
           - -c
@@ -70,4 +74,16 @@ spec:
             echo "Unregistering VPA admission controller webhook"
             kubectl delete -n {{ .Release.Namespace}} mutatingwebhookconfiguration.v1beta1.admissionregistration.k8s.io vpa-webhook-config || true
             kubectl delete -n {{ .Release.Namespace}} secret vpa-tls-certs || true
+      {{- with .Values.admissionController.cleanupOnDelete.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.admissionController.cleanupOnDelete.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.admissionController.cleanupOnDelete.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end }}

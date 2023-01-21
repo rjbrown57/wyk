@@ -10,6 +10,8 @@ priorityClassName: ""
 nameOverride: ""
 # fullnameOverride -- A template override for the fullname
 fullnameOverride: ""
+# podLabels -- Labels to add to all pods
+podLabels: {}
 rbac:
   # rbac.create -- If true, then rbac resources (clusterroles and clusterrolebindings) will be created for the selected components.
   create: true
@@ -45,6 +47,8 @@ recommender:
     tag: ""
   # recommender.podAnnotations -- Annotations to add to the recommender pod
   podAnnotations: {}
+  # recommender.podLabels -- Labels to add to the recommender pod
+  podLabels: {}
   # recommender.podSecurityContetxt -- The security context for the recommender pod
   podSecurityContext:
     runAsNonRoot: true
@@ -65,7 +69,7 @@ recommender:
 
 updater:
   # updater.enabled -- If true, the updater component will be deployed
-  enabled: false
+  enabled: true
   # updater.extraArgs -- A key-value map of flags to pass to the updater
   extraArgs: {}
   replicaCount: 1
@@ -81,6 +85,8 @@ updater:
     tag: ""
   # updater.podAnnotations -- Annotations to add to the updater pod
   podAnnotations: {}
+  # updater.podLabels -- Labels to add to the updater pod
+  podLabels: {}
   # updater.podSecurityContetxt -- The security context for the updater pod
   podSecurityContext:
     runAsNonRoot: true
@@ -102,6 +108,8 @@ updater:
 admissionController:
   # admissionController.enabled -- If true, will install the admission-controller component of vpa
   enabled: false
+  # admissionController.extraArgs -- A key-value map of flags to pass to the admissionController
+  extraArgs: {}
   # admissionController.generateCertificate -- If true and admissionController is enabled, a pre-install hook will run to create the certificate for the webhook
   generateCertificate: true
   certGen:
@@ -112,12 +120,27 @@ admissionController:
       tag: v11-alpine
       # admissionController.certGen.image.pullPolicy -- The pull policy for the certgen image. Recommend not changing this
       pullPolicy: Always
-      # admissionController.certGen.env -- Additional environment variables to be added to the certgen container. Format is KEY: Value format
+    # admissionController.certGen.env -- Additional environment variables to be added to the certgen container. Format is KEY: Value format
     env: {}
     # admissionController.certGen.resources -- The resources block for the certgen pod
     resources: {}
-  # admissionController.cleanupOnDelete -- If true, a post-delete job will remove the mutatingwebhookconfiguration and the tls secret for the admission controller
-  cleanupOnDelete: true
+    # admissionController.certGen.securityContext -- The securityContext block for the certgen pod
+    securityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+  # admissionController.cleanupOnDelete.enabled -- If true, a post-delete job will remove the mutatingwebhookconfiguration and the tls secret for the admission controller
+  cleanupOnDelete:
+    enabled: true
+    image:
+      # admissionController.cleanupOnDelete.image.repository -- The repository of the post-delete image
+      repository: quay.io/reactiveops/ci-images
+      # admissionController.cleanupOnDelete.image.tag -- The image tag to use for the admission controller cleanup image
+      tag: v11-alpine
+    resources: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
   replicaCount: 1
   # admissionController.podDisruptionBudget -- This is the setting for the pod disruption budget
   podDisruptionBudget: {}
@@ -131,6 +154,8 @@ admissionController:
     tag: ""
   # admissionController.podAnnotations -- Annotations to add to the admission controller pod
   podAnnotations: {}
+  # admissionController.podLabels -- Labels to add to the admission controller pod
+  podLabels: {}
   # admissionController.podSecurityContetxt -- The security context for the admission controller pod
   podSecurityContext:
     runAsNonRoot: true
@@ -145,6 +170,14 @@ admissionController:
     requests:
       cpu: 50m
       memory: 200Mi
+  # admissionController.tlsSecretKeys -- The keys in the vpa-tls-certs secret to map in to the admission controller
+  tlsSecretKeys: []
+    # - key: ca.crt
+    #   path: caCert.pem
+    # - key: tls.crt
+    #   path: serverCert.pem
+    # - key: tls.key
+    #   path: serverKey.pem
   nodeSelector: {}
   tolerations: []
   affinity: {}
