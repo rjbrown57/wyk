@@ -1,0 +1,5 @@
+releases:
+  - name: cilium/cilium-cli
+  - name: helm/helm
+  - name: kubernetes/kubernetes
+  - name: kubernetes-sigs/kind
