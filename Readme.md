@@ -1,19 +1,8 @@
 # Would you kindly? (Wyk)
 
-* `./wyk` to create a kind cluster and install argo
-* `./wyk addApps` to install metrics-server and vpa via argo
-* `./wyk portForward` forward argo UI
+a shell script + config file to quickly create a cilium based kind cluster. Use https://github.com/rjbrown/binman to fetch required deps. Adjust the number of workers by editing the "cilium.config" file
 
-## Harbor
-
-* Add an alias via /etc/hosts for localhost to core.harbor.domain
-* sudo kubectl port-forward service/harbor -n kube-system 443:443
-* you can now push to harbor e.g. `docker push core.harbor.domain/library/nginx:latest`
-
-## Links
-
-* https://pkg.go.dev/sigs.k8s.io/kind/pkg/apis/config/v1alpha4
-* https://kind.sigs.k8s.io/docs/user/quick-start/
-* https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/#install-kubectl-binary-with-curl-on-macos
-* https://www.haproxy.com/documentation/kubernetes/latest/usage/ingress/
-* https://learn.hashicorp.com/tutorials/vault/kubernetes-minikube
+* `./wyk create` to create a kind cluster with cilium cni
+* `./wyk delete` to delete
+* `./wyk hubbleui` to portforward hubble ui default port 12000
+* `./wyk hubblecli` to portforward hubble cli default port 4245

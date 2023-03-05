@@ -1,54 +1,46 @@
 #!/bin/bash
 
-kindConfig="./kind.config"
-chartDir="./charts/"
+kindConfig="./cilium.config"
 
-# V1 bash version
+hubblecliport="4245"
+hubbleuiport="12000"
 
 # Create cluster
+# Install cilium with ingress
+# Enable hubble-ui
+# Show cilium status
 kindCreate() {
-    # Create Kind Cluster
-    sudo kind create cluster --config=${kindConfig}
-
-    # Add ArgoCD
-    helm repo add argo https://argoproj.github.io/argo-helm
-    helm upgrade --install argocd argo/argo-cd -n argocd --create-namespace
+    kind create cluster --config=${kindConfig}
+    cilium install --kube-proxy-replacement=strict
+    printf "Brief sleep before enabling hubble-ui"
+    sleep 10
+    cilium hubble enable --ui
+    cilium status
 }
 
-portForward() {
-    kubectl port-forward service/argocd-server -n argocd 8080:443 &
-}
 
-getCreds() {
-    pass=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-    printf "Credentials = admin:%s\n" "${pass}"
-    printf "Log in at https://localhost:8080\n"
-}
-
-addApps() {
-    # Install Argo Pros
-    helm upgrade --install argoprojs charts/argoProjs -n argocd
-
-    # Install Argo Apps
-    helm upgrade --install argoapps charts/argoApps -n argocd
-}
+# https://github.com/cilium/charts
+# https://docs.cilium.io/en/v1.13/installation/kind/
 
 main() {
     case "${1}" in 
-        "create"|"")
+        "create")
             kindCreate
-        ;;
-        "getCreds")
-            getCreds
-        ;;
-        "portForward")
-            portForward
-        ;;
-        "addApps")
-            addApps
         ;;
         "delete")
             kind delete clusters kind
+        ;;
+        "hubbleui") 
+	    printf "Portforwarding hubble ui to 127.0.0.1:%s - ctrl+c to cancel\n" "${hubbleuiport}"
+            cilium hubble ui --port-forward "${hubbleuiport}"
+        ;;
+        "hubblecli") 
+	    printf "Portforwarding hubble port-forward to 127.0.0.1:%s - ctrl+c to cancel\n" "${hubblecliport}"
+            cilium hubble port-forward --port-forward "${hubblecliport}"
+	;;
+        "")
+            printf "Options are create delete hubbleui hubblecli\n"
+        ;;
     esac
 }
 
