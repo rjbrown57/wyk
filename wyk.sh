@@ -1,7 +1,12 @@
 #!/bin/bash
 
+set -e
+
 kindConfig="./cilium.config"
 
+forwardaddress="0.0.0.0"
+promport="9090"
+grafanaport="30280"
 hubblecliport="4245"
 hubbleuiport="12000"
 
@@ -19,7 +24,15 @@ kindCreate() {
 }
 
 
-# https://github.com/cilium/charts
+addPromStack(){
+        helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+        helm repo update
+        helm install kps -n prom-stack --create-namespace  prometheus-community/kube-prometheus-stack
+        helm install promadapter prometheus-community/prometheus-adapter -n prom-stack -f promadapter.yaml
+}
+
+
+# https://github.com/cilium/cilium/blob/master/install/kubernetes/cilium/values.yaml
 # https://docs.cilium.io/en/v1.13/installation/kind/
 
 main() {
@@ -27,19 +40,34 @@ main() {
         "create")
             kindCreate
         ;;
+        "full")
+            kindCreate
+            addPromStack
+        ;;
         "delete")
             kind delete clusters kind
         ;;
+        "addpromstack") 
+            addPromStack
+        ;;
+        "promui") 
+            printf "Portforwarding promui to %s:%s - ctrl+c to cancel\n" "${forwardAddress}" "${promport}"
+            kubectl port-forward -n prom-stack service/kps-kube-prometheus-stack-prometheus --address "${forwardaddress}" "${promport}:${promport}"
+        ;;
+        "grafanaui")
+            printf "Portforwarding grafana to %s:%s - ctrl+c to cancel\n" "${forwardAddress}" "${grafanaport}"
+            kubectl port-forward -n prom-stack service/kps-grafana --address "${forwardaddress}" "${grafanaport}":80
+        ;;
         "hubbleui") 
-	    printf "Portforwarding hubble ui to 127.0.0.1:%s - ctrl+c to cancel\n" "${hubbleuiport}"
-            cilium hubble ui --port-forward "${hubbleuiport}"
+            printf "Portforwarding hubble ui to 127.0.0.1:%s - ctrl+c to cancel\n" "${hubbleuiport}"
+            kubectl port-forward -n kube-system service/hubble-ui --address "${forwardaddress}" "${hubbleuiport}":80
         ;;
         "hubblecli") 
-	    printf "Portforwarding hubble port-forward to 127.0.0.1:%s - ctrl+c to cancel\n" "${hubblecliport}"
+            printf "Portforwarding hubble port-forward to 127.0.0.1:%s - ctrl+c to cancel\n" "${hubblecliport}"
             cilium hubble port-forward --port-forward "${hubblecliport}"
-	;;
+        ;;
         "")
-            printf "Options are create delete hubbleui hubblecli\n"
+            printf "Options are create full delete hubbleui hubblecli addpromstack grafanaui promui\n"
         ;;
     esac
 }
