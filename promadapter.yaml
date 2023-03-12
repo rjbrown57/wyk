@@ -1,7 +1,23 @@
+image:
+  repository: registry.k8s.io/prometheus-adapter/prometheus-adapter
+  tag: v0.10.0
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
 prometheus:
   url: http://kps-kube-prometheus-stack-prometheus.prom-stack.svc
+  port: 9090
+  path: ""
 
 rules:
+  default: false
   resource:
     cpu:
       containerQuery: |
