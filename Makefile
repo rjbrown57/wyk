@@ -3,7 +3,7 @@
 # Define variables
 MGMT_CLUSTER_NAME ?= clusterapi-mgmt
 WORKLOAD_CLUSTER_NAME ?= capi1
-KUBECONFIG_PATH ?= $(shell pwd)/$(WORKLOAD_CLUSTER_NAME).kubeconfig
+KUBECONFIG_PATH ?= $(shell pwd)/.kube/$(WORKLOAD_CLUSTER_NAME).kubeconfig.yaml
 K8S_VERSION ?= 1.33.1
 
 # Default target
@@ -11,24 +11,37 @@ all: create-mgmt-cluster
 
 cleanup: delete-workload-cluster delete-mgmt-cluster remove-config
 
+sleep:
+	@echo "Sleeping for 30 seconds..."
+	sleep 30
+
 setup-capi:
 	@echo "Setting up Cluster API with Kind..."
+	export CLUSTER_TOPOLOGY=true
 	clusterctl init --infrastructure docker
 
 add-cluster: gen-cluster apply-cluster
 
 gen-cluster:
-	clusterctl generate cluster $(WORKLOAD_CLUSTER_NAME) --kubernetes-version $(K8S_VERSION) --flavor development > cluster.yaml
+	clusterctl generate cluster $(WORKLOAD_CLUSTER_NAME) --flavor development \
+  --kubernetes-version $(K8S_VERSION) \
+  --control-plane-machine-count=3 \
+  --worker-machine-count=3 \
+  > cluster.yaml
 
 apply-cluster:
 	@echo "Adding workload cluster: $(WORKLOAD_CLUSTER_NAME)..."
 	kubectl apply -f cluster.yaml
 
 get-config:
-	kind get kubeconfig --name $(WORKLOAD_CLUSTER_NAME) > ~/.kube/$(WORKLOAD_CLUSTER_NAME).kubeconfig.yaml
+	@echo "Waiting for workload cluster to be ready..."
+	until kubectl --kubeconfig=$(KUBECONFIG_PATH) get nodes &>/dev/null; do \
+	echo "Waiting for cluster API server to respond..."; \
+	sleep 5; \
+	done
+	@echo "Workload cluster is ready."
+	kind get kubeconfig --name $(WORKLOAD_CLUSTER_NAME) > $(KUBECONFIG_PATH)
 	@echo "Kubeconfig for $(WORKLOAD_CLUSTER_NAME) saved to $(KUBECONFIG_PATH)"
-	@echo "To use this kubeconfig, set the KUBECONFIG environment variable:"
-	@echo "export KUBECONFIG=$(KUBECONFIG_PATH)"
 
 remove-config:
 	@echo "Removing kubeconfig for $(WORKLOAD_CLUSTER_NAME)..."
