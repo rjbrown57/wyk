@@ -3,11 +3,11 @@
 # Define variables
 MGMT_CLUSTER_NAME ?= clusterapi-mgmt
 WORKLOAD_CLUSTER_NAME ?= capi1
-KUBECONFIG_PATH ?= $(shell pwd)/.kube/$(WORKLOAD_CLUSTER_NAME).kubeconfig.yaml
+KUBECONFIG_PATH ?= $(HOME)/.kube/$(WORKLOAD_CLUSTER_NAME).kubeconfig.yaml
 K8S_VERSION ?= 1.33.1
 
 # Default target
-all: create-mgmt-cluster
+all: create-mgmt-cluster setup-capi sleep add-cluster sleep get-config
 
 cleanup: delete-workload-cluster delete-mgmt-cluster remove-config
 
@@ -34,12 +34,6 @@ apply-cluster:
 	kubectl apply -f cluster.yaml
 
 get-config:
-	@echo "Waiting for workload cluster to be ready..."
-	until kubectl --kubeconfig=$(KUBECONFIG_PATH) get nodes &>/dev/null; do \
-	echo "Waiting for cluster API server to respond..."; \
-	sleep 5; \
-	done
-	@echo "Workload cluster is ready."
 	kind get kubeconfig --name $(WORKLOAD_CLUSTER_NAME) > $(KUBECONFIG_PATH)
 	@echo "Kubeconfig for $(WORKLOAD_CLUSTER_NAME) saved to $(KUBECONFIG_PATH)"
 
