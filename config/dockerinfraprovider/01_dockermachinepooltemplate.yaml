@@ -1,0 +1,10 @@
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: DockerMachinePoolTemplate
+metadata:
+  name: docker-default-worker-machinepooltemplate
+  namespace: default
+spec:
+  template:
+    spec:
+      template: {}
+
