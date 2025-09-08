@@ -1,0 +1,4 @@
+clusters:
+  - name: capi1
+  - name: capi2
+  - name: capi3
