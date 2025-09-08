@@ -44,13 +44,12 @@ remove-config:
 
 install-cni:
 	@echo "Installing Cilium CNI..."
-	kubectl config use-context kind-$(WORKLOAD_CLUSTER_NAME)
 	cilium install
 
-delete-workload-cluster:
-	@echo "Deleting workload cluster: $(WORKLOAD_CLUSTER_NAME)..."
-	clusterctl delete cluster $(WORKLOAD_CLUSTER_NAME)
-	@echo "Workload cluster deleted."
+delete-clusters:
+	for cluster in $$(kind get clusters); do \
+		kind delete cluster --name $$cluster; \
+	done
 
 # Target to create the Kind management cluster
 create-mgmt-cluster:
