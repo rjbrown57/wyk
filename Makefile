@@ -1,6 +1,6 @@
 # Makefile for setting up Kind clusters with Cluster API
 
-.PHONY: all setup-capi setup-capi-rke2 create-mgmt-cluster delete-workload-cluster delete-mgmt-cluster remove-config install-cni sleep
+.PHONY: all setup-capi setup-capi-rke2 create-mgmt-cluster delete-workload-cluster delete-mgmt-cluster remove-config install-cni sleep get-config
 
 # Define variables
 MGMT_CLUSTER_NAME ?= clusterapi-mgmt
@@ -27,8 +27,15 @@ setup-capi-rke2:
 # Utility targets
 
 get-config:
-	kind get kubeconfig --name $(WORKLOAD_CLUSTER_NAME) > $(KUBECONFIG_PATH)
-	@echo "Kubeconfig for $(WORKLOAD_CLUSTER_NAME) saved to $(KUBECONFIG_PATH)"
+	for cluster in $$(kind get clusters); do \
+		kind get kubeconfig --name $$cluster > $(HOME)/.kube/$$cluster.kubeconfig.yaml; \
+		CLUSTER_LIST="$$CLUSTER_LIST $$cluster"; \
+	done
+	export KUBECONFIG=$$CLUSTER_LIST && \
+	kubectl config view --flatten > $(HOME)/.kube/kubeconfig.yaml
+	@echo "Kubeconfig merged."
+	@echo "export KUBECONFIG=$(HOME)/.kube/kubeconfig.yaml"
+
 
 remove-config:
 	@echo "Removing kubeconfig for $(WORKLOAD_CLUSTER_NAME)..."
