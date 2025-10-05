@@ -43,6 +43,6 @@ Creates: `ClusterClass` named `kubeadm-docker` in `default` namespace.
   - `kubectl apply -f config/kubeadm/02_clusterclass.yaml`
 - Finally, create the `Cluster`:
   - `kubectl apply -f config/clusters/
-- Or use helm chart at charts/kcapi to create multiple clusters
+- Or use helm chart at charts/kcapi to create multiple clusters. At this point the clusters still need a CNI installed.
 
 
