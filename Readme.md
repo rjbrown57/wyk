@@ -18,11 +18,6 @@ To deploy from scratch run the following steps
 
 * make create-mgmt-cluster
 * make setup-capi
-* make add-cluster
-* make get-config # Set kubeconfig
-* make install-cni
-
-At this point 2 node k8s cluster should be up. You can view this with `clusterctl describe cluster capi1` with the management cluster as your active context
 
 ## Links
 
