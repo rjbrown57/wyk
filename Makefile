@@ -1,67 +1,41 @@
-# Makefile for setting up Kind clusters with Cluster API
+# Root Makefile - delegates to CAPI and OCM subdirectories
 
-.PHONY: all setup-capi setup-capi-rke2 create-mgmt-cluster delete-workload-cluster delete-mgmt-cluster remove-config install-cni sleep get-config
-
-# Define variables
-MGMT_CLUSTER_NAME ?= clusterapi-mgmt
-WORKLOAD_CLUSTER_NAME ?= capi1
-KUBECONFIG_PATH ?= $(HOME)/.kube/$(WORKLOAD_CLUSTER_NAME).kubeconfig.yaml
-K8S_VERSION ?= 1.34.0
+.PHONY: help capi ocm capi-% ocm-%
 
 # Default target
-all: create-mgmt-cluster setup-capi
-	@echo "Created kind cluster and installed Cluster API + Kubeadm + Docker provider"
+help:
+	@echo "Available commands:"
+	@echo ""
+	@echo "CAPI (Cluster API) commands:"
+	@echo "  make capi                 - Show CAPI help"
+	@echo "  make capi-<target>        - Run CAPI target (e.g., make capi-setup-capi)"
+	@echo ""
+	@echo "OCM (Open Cluster Management) commands:"
+	@echo "  make ocm                  - Show OCM help"
+	@echo "  make ocm-<target>         - Run OCM target (e.g., make ocm-create-hub)"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make capi-setup-capi      - Setup Cluster API"
+	@echo "  make ocm-create-hub       - Create OCM hub cluster"
+	@echo "  make ocm-join-spokes      - Join spoke clusters to hub"
 
-cleanup: delete-workload-cluster delete-mgmt-cluster remove-config
+# CAPI delegation
+capi:
+	@cd capi && $(MAKE) help
 
-setup-capi:
-	@echo "Setting up Cluster API with Kind..."
-	@echo "Initializing Cluster API with Docker provider and Kubeadm Bootstrap/Control Plane provider"
-	export CLUSTER_TOPOLOGY=true && \
-	clusterctl init --infrastructure docker
+capi-%:
+	@cd capi && $(MAKE) $(subst capi-,,$@)
 
-setup-capi-rke2:
-	@echo "Initializing Cluster API RKE2 Bootstrap/Control Plane provider"
-	clusterctl init --bootstrap rke2 --control-plane rke2
+# OCM delegation
+ocm:
+	@cd ocm && $(MAKE) help
 
-# Utility targets
+ocm-%:
+	@cd ocm && $(MAKE) $(subst ocm-,,$@)
 
-get-config:
-	for cluster in $$(kind get clusters); do \
-		kind get kubeconfig --name $$cluster > $(HOME)/.kube/$$cluster.kubeconfig.yaml; \
-		CLUSTER_LIST="$$CLUSTER_LIST $$cluster"; \
-	done
-	export KUBECONFIG=$$CLUSTER_LIST && \
-	kubectl config view --flatten > $(HOME)/.kube/kubeconfig.yaml
-	@echo "Kubeconfig merged."
-	@echo "export KUBECONFIG=$(HOME)/.kube/kubeconfig.yaml"
+# Legacy targets for backward compatibility
+all: capi-all
+	@echo "Running default CAPI setup..."
 
-
-remove-config:
-	@echo "Removing kubeconfig for $(WORKLOAD_CLUSTER_NAME)..."
-	rm -f $(KUBECONFIG_PATH)
-	@echo "Kubeconfig removed."
-
-install-cni:
-	@echo "Installing Cilium CNI..."
-	cilium install
-
-delete-clusters:
-	for cluster in $$(kind get clusters); do \
-		kind delete cluster --name $$cluster; \
-	done
-
-# Target to create the Kind management cluster
-create-mgmt-cluster:
-	@echo "Creating Kind management cluster: $(MGMT_CLUSTER_NAME)..."
-	kind create cluster --name $(MGMT_CLUSTER_NAME) --config kind.config
-
-# Target to delete the Kind management cluster
-delete-mgmt-cluster:
-	@echo "Deleting Kind management cluster: $(MGMT_CLUSTER_NAME)..."
-	kind delete cluster --name $(MGMT_CLUSTER_NAME)
-	@echo "Management cluster deleted."
-
-sleep:
-	@echo "Sleeping for 30 seconds..."
-	sleep 30
+cleanup: capi-cleanup
+	@echo "Running CAPI cleanup..."

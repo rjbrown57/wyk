@@ -31,11 +31,6 @@ Creates: `ClusterClass` named `kubeadm-docker` in `default` namespace.
     - `machineDeployments[0].class: default-worker` (uses the worker bootstrap and `DockerMachineTemplate/docker-default`)
 
 
-### 03_cluster_capi1.yaml
-Creates: `Cluster` named `capi1` in `default` namespace.
-
-- Purpose in CAPI: Represents an actual cluster instance using the `kubeadm-docker` `ClusterClass`. It specifies version, control plane size, and worker topology, and provides values for any variables consumed by the `ClusterClass` patches.
-
 ## Usage
 
 - make create-mgmt-cluster
@@ -47,6 +42,7 @@ Creates: `Cluster` named `capi1` in `default` namespace.
 - Then apply the `ClusterClass`:
   - `kubectl apply -f config/kubeadm/02_clusterclass.yaml`
 - Finally, create the `Cluster`:
-  - `kubectl apply -f config/kubeadm/03_cluster_capi1.yaml`
+  - `kubectl apply -f config/clusters/
+- Or use helm chart at charts/kcapi to create multiple clusters. At this point the clusters still need a CNI installed.
 
 
