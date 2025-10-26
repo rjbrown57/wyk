@@ -78,27 +78,18 @@ echo "Built join command: $JOIN_COMMAND"
 # Switch to spoke cluster context
 kubectl config use-context "$SPOKE_CONTEXT"
 
+
 # Verify spoke cluster is accessible
 if ! kubectl get nodes &> /dev/null; then
     echo "Error: Cannot access spoke cluster. Please ensure it's running and accessible."
     exit 1
 fi
 
-echo "Joining spoke cluster to hub..."
-echo "Executing join command..."
+# apply the join pod yaml
+kubectl apply -f scripts/join-pod.yaml
 
-# Execute the join command
-eval "$JOIN_COMMAND"
-
-echo "Cluster '$SPOKE_CLUSTER_NAME' join command executed successfully."
-echo "Please wait a few minutes for the cluster to appear in the hub cluster."
-
-# Switch back to hub cluster to check status
-kubectl config use-context "$HUB_CONTEXT"
-
-echo "Checking cluster status..."
-echo "You can monitor the cluster status with:"
-echo "kubectl config use-context $HUB_CONTEXT && kubectl get managedclusters"
-echo ""
-echo "To check the cluster's detailed status:"
-echo "kubectl config use-context $HUB_CONTEXT && kubectl describe managedcluster $SPOKE_CLUSTER_NAME"
+# now exec into the pod and run 
+# apt update && apt install -y curl
+# curl -L https://raw.githubusercontent.com/open-cluster-management-io/clusteradm/main/install.sh | bash
+# now exec the join command from above inside the pod
+# then from the hub run clusteradm accept --clusters ocm-spoke1
