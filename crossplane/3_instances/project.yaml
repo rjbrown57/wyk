@@ -1,0 +1,14 @@
+---
+apiVersion: tetris.io/v1alpha1
+kind: Project
+metadata:
+  name: test-project-instance
+spec:
+  crossplane:
+    compositionRef:
+      name: project-composition
+  name: test
+  description: test project
+  namespaces:
+    - test
+    - test2

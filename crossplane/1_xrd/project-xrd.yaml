@@ -1,0 +1,47 @@
+---
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: projects.tetris.io
+spec:
+  scope: Cluster
+  group: tetris.io
+  names:
+    kind: Project
+    plural: projects  
+    shortNames:
+    - proj
+  defaultCompositionRef:
+    name: project-composition
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+     openAPIV3Schema:
+       type: object
+       properties:
+        spec:
+          type: object
+          properties:
+            name:
+              description: The project's name.
+              type: string
+            description:
+              description: The project's description.
+              type: string
+            namespaces:
+               description: The projects namespaces.
+               type: array
+               items:
+                 type: string
+                 properties:
+                   name:
+                     description: The namespace's name.
+                     type: string
+        status:
+          type: object
+          properties:
+            ready:
+              description: Whether the project is ready.
+              type: boolean
