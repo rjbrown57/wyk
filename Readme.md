@@ -1,3 +1,7 @@
-# KCAPI - Kubernetes Cluster API and Open Cluster Management
+# WYK - (Would you kindly?)
 
-This repository contains WIP configs for messing around with capi and/or ocm.
+WYK is a series Makefiles for spinning up dev environments in kind
+
+* capi
+* ocm
+* crossplane
