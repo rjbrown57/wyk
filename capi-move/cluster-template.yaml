@@ -58,6 +58,7 @@ spec:
     kubeAPIServer:
       extraArgs:
       - --anonymous-auth=true
+    cni: none # we will send in cilium from capih
   machineTemplate:
     spec:
       infrastructureRef:
