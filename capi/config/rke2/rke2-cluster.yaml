@@ -1,4 +1,4 @@
-apiVersion: cluster.x-k8s.io/v1beta1
+apiVersion: cluster.x-k8s.io/v1beta2
 kind: Cluster
 metadata:
   name: capi1-rke2
@@ -13,14 +13,14 @@ spec:
       cidrBlocks:
       - 10.46.0.0/16
   topology:
-    class: rke2-class
+    classRef:
+      name: rke2-class
     controlPlane:
-      metadata: {}
       replicas: 1
     variables:
     - name: dockerKindImage
       value: kindest/node:v1.34.0
-    version: 1.34.0+rke2r1
+    version: v1.34.0+rke2r1
     workers:
       machineDeployments:
       - class: default-worker
